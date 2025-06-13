@@ -16,9 +16,9 @@ modules_dir = Path(__file__).parent
 
 # Import all Python files in the modules directory (except __init__.py and base_module.py)
 for finder, name, _ in pkgutil.iter_modules([str(modules_dir)]):
-    if name not in ('__init__', 'base_module'):
+    if name not in ("__init__", "base_module"):
         try:
-            module = importlib.import_module(f'.{name}', package='app.modules')
+            module = importlib.import_module(f".{name}", package="app.modules")
             # The @register_module decorator will handle registration
         except ImportError as e:
             print(f"Warning: Could not import module {name}: {e}")
@@ -26,4 +26,4 @@ for finder, name, _ in pkgutil.iter_modules([str(modules_dir)]):
 # Export the module registry
 MODULES = MODULE_REGISTRY
 
-__all__ = ['BaseModule', 'MODULES', 'register_module']
+__all__ = ["BaseModule", "MODULES", "register_module"]

@@ -11,7 +11,7 @@ from .file_utils import (
     delete_file,
     get_audio_duration,
     get_supported_formats,
-    get_supported_mimetypes
+    get_supported_mimetypes,
 )
 
 from .audio_utils import (
@@ -19,24 +19,23 @@ from .audio_utils import (
     trim_audio,
     convert_audio,
     normalize_audio,
-    extract_audio
+    extract_audio,
 )
 
 __all__ = [
     # File utilities
-    'is_audio_file',
-    'get_file_info',
-    'create_temp_file',
-    'copy_file',
-    'delete_file',
-    'get_audio_duration',
-    'get_supported_formats',
-    'get_supported_mimetypes',
-    
+    "is_audio_file",
+    "get_file_info",
+    "create_temp_file",
+    "copy_file",
+    "delete_file",
+    "get_audio_duration",
+    "get_supported_formats",
+    "get_supported_mimetypes",
     # Audio utilities
-    'get_audio_info',
-    'trim_audio',
-    'convert_audio',
-    'normalize_audio',
-    'extract_audio'
+    "get_audio_info",
+    "trim_audio",
+    "convert_audio",
+    "normalize_audio",
+    "extract_audio",
 ]

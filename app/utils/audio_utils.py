@@ -11,27 +11,30 @@ from typing import Optional, Tuple, Union, List, Dict, Any
 # Import file utilities
 from .file_utils import create_temp_file, delete_file
 
+
 def get_audio_info(filepath: str) -> Dict[str, Any]:
     """Get detailed information about an audio file using ffprobe.
-    
+
     Args:
         filepath: Path to the audio file.
-        
+
     Returns:
         dict: Dictionary containing audio file information.
     """
     try:
         probe = ffmpeg.probe(filepath)
-        audio_info = next(s for s in probe['streams'] if s['codec_type'] == 'audio')
-        
+        audio_info = next(s for s in probe["streams"] if s["codec_type"] == "audio")
+
         return {
-            'duration': float(audio_info.get('duration', 0)),
-            'sample_rate': int(audio_info.get('sample_rate', 44100)),
-            'channels': int(audio_info.get('channels', 2)),
-            'codec': audio_info.get('codec_name', 'unknown'),
-            'bitrate': int(audio_info.get('bit_rate', 0)) if 'bit_rate' in audio_info else 0,
-            'format': probe.get('format', {}).get('format_name', 'unknown'),
-            'size': int(probe.get('format', {}).get('size', 0))
+            "duration": float(audio_info.get("duration", 0)),
+            "sample_rate": int(audio_info.get("sample_rate", 44100)),
+            "channels": int(audio_info.get("channels", 2)),
+            "codec": audio_info.get("codec_name", "unknown"),
+            "bitrate": int(audio_info.get("bit_rate", 0))
+            if "bit_rate" in audio_info
+            else 0,
+            "format": probe.get("format", {}).get("format_name", "unknown"),
+            "size": int(probe.get("format", {}).get("size", 0)),
         }
     except ffmpeg.Error as e:
         print(f"Error getting audio info: {e.stderr.decode()}")
@@ -40,22 +43,23 @@ def get_audio_info(filepath: str) -> Dict[str, Any]:
         print(f"Unexpected error: {str(e)}")
         return {}
 
+
 def trim_audio(
     input_file: str,
     output_file: Optional[str] = None,
     start_time: float = 0.0,
     end_time: Optional[float] = None,
-    format: str = None
+    format: str = None,
 ) -> str:
     """Trim an audio file using ffmpeg.
-    
+
     Args:
         input_file: Path to the input audio file.
         output_file: Path to save the trimmed audio file. If None, a temp file is created.
         start_time: Start time in seconds.
         end_time: End time in seconds. If None, trims to the end of the file.
         format: Output format/extension. If None, uses the same as input.
-        
+
     Returns:
         str: Path to the trimmed audio file.
     """
@@ -64,53 +68,56 @@ def trim_audio(
         input_info = get_audio_info(input_file)
         if not input_info:
             raise ValueError("Could not read input file information")
-            
+
         # Use input file's format if none specified
         if format is None:
-            format = Path(input_file).suffix.lstrip('.')
+            format = Path(input_file).suffix.lstrip(".")
             if not format:  # If no extension, default to wav
-                format = 'wav'
-        
+                format = "wav"
+
         # Create output file if not provided
         if output_file is None:
-            output_file = create_temp_file(suffix=f'.{format}')
-        
+            output_file = create_temp_file(suffix=f".{format}")
+
         # Build the ffmpeg command
         stream = ffmpeg.input(input_file, ss=start_time)
-        
+
         # Add end time if specified
         if end_time is not None:
-            stream = ffmpeg.filter(stream, 'atrim', end=end_time - start_time)
-        
+            stream = ffmpeg.filter(stream, "atrim", end=end_time - start_time)
+
         # Set output options based on format
         output_kwargs = {
-            'loglevel': 'error',  # Only show errors
-            'y': None  # Overwrite output file if it exists
+            "loglevel": "error",  # Only show errors
+            "y": None,  # Overwrite output file if it exists
         }
-        
+
         # For WAV output, use pcm_s16le codec
-        if format.lower() == 'wav':
-            output_kwargs.update({
-                'acodec': 'pcm_s16le',
-                'ar': input_info.get('sample_rate', 44100),
-                'ac': input_info.get('channels', 2)
-            })
+        if format.lower() == "wav":
+            output_kwargs.update(
+                {
+                    "acodec": "pcm_s16le",
+                    "ar": input_info.get("sample_rate", 44100),
+                    "ac": input_info.get("channels", 2),
+                }
+            )
         # For MP3 output, use libmp3lame with reasonable quality
-        elif format.lower() == 'mp3':
-            output_kwargs.update({
-                'acodec': 'libmp3lame',
-                'q:a': 2  # VBR quality, 0-9 where 0 is best
-            })
+        elif format.lower() == "mp3":
+            output_kwargs.update(
+                {"acodec": "libmp3lame", "q:a": 2}  # VBR quality, 0-9 where 0 is best
+            )
         # For other formats, let ffmpeg choose the best codec
-        
+
         # Create output stream
         stream = ffmpeg.output(stream, output_file, **output_kwargs)
-        
+
         # Run the command
-        ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
-        
+        ffmpeg.run(
+            stream, overwrite_output=True, capture_stdout=True, capture_stderr=True
+        )
+
         return output_file
-        
+
     except ffmpeg.Error as e:
         error_message = e.stderr.decode() if e.stderr else str(e)
         print(f"FFmpeg error: {error_message}")
@@ -118,20 +125,21 @@ def trim_audio(
             delete_file(output_file)
         raise Exception(f"Error trimming audio: {error_message}")
     except Exception as e:
-        if 'output_file' in locals() and output_file and os.path.exists(output_file):
+        if "output_file" in locals() and output_file and os.path.exists(output_file):
             delete_file(output_file)
         raise Exception(f"Error processing audio: {str(e)}")
+
 
 def convert_audio(
     input_file: str,
     output_file: Optional[str] = None,
-    format: str = 'mp3',
-    bitrate: str = '192k',
+    format: str = "mp3",
+    bitrate: str = "192k",
     sample_rate: int = 44100,
-    channels: int = 2
+    channels: int = 2,
 ) -> str:
     """Convert an audio file to a different format.
-    
+
     Args:
         input_file: Path to the input audio file.
         output_file: Path to save the converted audio file. If None, a temp file is created.
@@ -139,116 +147,120 @@ def convert_audio(
         bitrate: Output bitrate (e.g., '128k', '192k', '320k').
         sample_rate: Output sample rate in Hz.
         channels: Number of output channels.
-        
+
     Returns:
         str: Path to the converted audio file.
     """
     if output_file is None:
-        output_file = create_temp_file(f'.{format}')
-    
+        output_file = create_temp_file(f".{format}")
+
     try:
         stream = ffmpeg.input(input_file)
-        
+
         # Set output options
         stream = ffmpeg.output(
             stream,
             output_file,
-            acodec='libmp3lame' if format == 'mp3' else None,
+            acodec="libmp3lame" if format == "mp3" else None,
             audio_bitrate=bitrate,
             ar=sample_rate,
             ac=channels,
-            loglevel='error'  # Only show errors
+            loglevel="error",  # Only show errors
         )
-        
+
         # Run the command
-        ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
-        
+        ffmpeg.run(
+            stream, overwrite_output=True, capture_stdout=True, capture_stderr=True
+        )
+
         return output_file
     except ffmpeg.Error as e:
         delete_file(output_file)  # Clean up the output file on error
         print(f"Error converting audio: {e.stderr.decode()}")
         raise
 
+
 def normalize_audio(
-    input_file: str,
-    output_file: Optional[str] = None,
-    target_level: float = -1.0
+    input_file: str, output_file: Optional[str] = None, target_level: float = -1.0
 ) -> str:
     """Normalize the audio to a target level.
-    
+
     Args:
         input_file: Path to the input audio file.
         output_file: Path to save the normalized audio file. If None, a temp file is created.
         target_level: Target level in dBFS (e.g., -1.0 for -1 dBFS).
-        
+
     Returns:
         str: Path to the normalized audio file.
     """
     if output_file is None:
-        output_file = create_temp_file('.wav')
-    
+        output_file = create_temp_file(".wav")
+
     try:
         stream = ffmpeg.input(input_file)
-        
+
         # Apply normalization
-        stream = ffmpeg.filter(stream, 'loudnorm', I=target_level)
-        
+        stream = ffmpeg.filter(stream, "loudnorm", I=target_level)
+
         # Set output options
         stream = ffmpeg.output(
             stream,
             output_file,
-            acodec='pcm_s16le',
+            acodec="pcm_s16le",
             ar=44100,
             ac=2,
-            loglevel='error'  # Only show errors
+            loglevel="error",  # Only show errors
         )
-        
+
         # Run the command
-        ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
-        
+        ffmpeg.run(
+            stream, overwrite_output=True, capture_stdout=True, capture_stderr=True
+        )
+
         return output_file
     except ffmpeg.Error as e:
         delete_file(output_file)  # Clean up the output file on error
         print(f"Error normalizing audio: {e.stderr.decode()}")
         raise
 
+
 def extract_audio(
-    input_file: str,
-    output_file: Optional[str] = None,
-    format: str = 'wav'
+    input_file: str, output_file: Optional[str] = None, format: str = "wav"
 ) -> str:
     """Extract audio from a video or audio file.
-    
+
     Args:
         input_file: Path to the input file (video or audio).
         output_file: Path to save the extracted audio file. If None, a temp file is created.
         format: Output format/extension.
-        
+
     Returns:
         str: Path to the extracted audio file.
     """
     if output_file is None:
-        output_file = create_temp_file(f'.{format}')
-    
+        output_file = create_temp_file(f".{format}")
+
     try:
         stream = ffmpeg.input(input_file)
-        
+
         # Extract audio stream
         stream = stream.audio
-        
+
         # Set output options
         stream = ffmpeg.output(
             stream,
             output_file,
-            acodec='pcm_s16le' if format == 'wav' else None,
+            acodec="pcm_s16le" if format == "wav" else None,
             ar=44100,
             ac=2,
-            loglevel='error'  # Only show errors
+            loglevel="error",  # Only show errors
         )
-        
+
         # Run the command
-        ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
-        
+        ffmpeg.run(
+            stream, overwrite_output=True, capture_stdout=True, capture_stderr=True
+        )
+
         return output_file
     except ffmpeg.Error as e:
         delete_file(output_file)  # Clean up the output file on error

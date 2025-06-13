@@ -12,11 +12,35 @@ A modular audio processing dashboard built with Streamlit, designed for applying
   - Active file highlighting
   - Download processed files
 
+- 📦 **Modules**
+  - **Trim**: Cut audio files with precision
+  - **Convert**: Convert between different audio formats with customizable settings
+  - **Vinyl Effect**: Apply vintage vinyl record effects to audio
+  - **About**: Application information and help
+
 - ✂️ **Audio Processing**
   - Trim audio with visual timeline
+  - Convert between multiple audio formats (MP3, WAV, FLAC, OGG, M4A, AAC)
+  - Apply vinyl effect with customizable parameters
   - Preview audio before processing
   - Preserve original file format
   - Real-time feedback
+
+- 🎛️ **Audio Conversion**
+  - Convert between multiple formats (MP3, WAV, FLAC, OGG, M4A, AAC)
+  - Adjustable bitrate for lossy formats
+  - Batch processing of multiple files
+  - Custom output filename prefix
+
+- 🎚️ **Vinyl Effect**
+  - Apply vintage vinyl record effect
+  - Customizable parameters:
+    - Highpass and lowpass filtering
+    - Echo with configurable delay and decay
+    - Tremolo with adjustable frequency and depth
+    - Bass and treble equalization
+    - Output volume control
+  - Real-time preview of effect settings
 
 - 🎛️ **Modular Architecture**
   - Easy to add new processing modules
