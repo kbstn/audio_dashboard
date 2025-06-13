@@ -50,6 +50,7 @@
 - [x] Test trim module integration
 - [x] Add download button for trimmed files
 - [x] Fix codec compatibility issues with different audio formats
+- [] Add a plot of the waveform of the audio file
 
 ### Example Module: About
 - [x] Add about page with app information
@@ -87,8 +88,10 @@
 - [ ] Write unit tests for core functionality
 - [ ] Add integration tests
 - [ ] Create user documentation
-- [ ] Write developer documentation
-- [x] Created README with setup instructions
+- [x] Create module development guide (MODULE_DEVELOPMENT.md)
+- [ ] Add comprehensive docstrings to all modules and functions
+- [ ] Create user guide in README.md
+- [ ] Add inline comments for complex logic
 
 ## Completed Tasks (2025-06-13)
 - [x] Fixed file manager layout and button alignment

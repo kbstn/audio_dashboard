@@ -17,6 +17,7 @@ ffmpeg_dashboard2/
 │       └── about.py        # About page module
 ├── uploads/                # Uploaded and processed files
 ├── tests/                  # Unit tests
+├── MODULE_DEVELOPMENT.md   # Guide for creating new modules
 ├── .gitignore
 ├── requirements.txt        # Python dependencies
 ├── README.md
