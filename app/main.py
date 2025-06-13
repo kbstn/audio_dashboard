@@ -137,8 +137,8 @@ def render_file_sidebar() -> None:
         st.markdown("### Your Files")
         
         for i, file_info in enumerate(files):
-            # Create columns for file name, move buttons, download, and delete button
-            cols = st.columns([4, 1, 1, 1, 1])
+            # Create columns for file name, play button, move buttons, download, and delete button
+            cols = st.columns([3, 1, 1, 1, 1, 1])
             
             # File name with active state
             with cols[0]:
@@ -152,8 +152,19 @@ def render_file_sidebar() -> None:
                     set_active_file(file_info['path'])
                     st.rerun()
             
-            # Move up button
+            # Play button
             with cols[1]:
+                play_button = st.button("▶️", key=f"play_{i}", help="Play/Pause")
+                if play_button:
+                    # Toggle play state
+                    if st.session_state.get('now_playing') == file_info['path']:
+                        st.session_state.now_playing = None
+                    else:
+                        st.session_state.now_playing = file_info['path']
+                    st.rerun()
+            
+            # Move up button
+            with cols[2]:
                 if i > 0 and st.button("⬆️", key=f"up_{i}", help="Move up"):
                     # Swap with previous file
                     files[i], files[i-1] = files[i-1], files[i]
@@ -163,7 +174,7 @@ def render_file_sidebar() -> None:
                     st.rerun()
             
             # Move down button
-            with cols[2]:
+            with cols[3]:
                 if i < len(files) - 1 and st.button("⬇️", key=f"down_{i}", help="Move down"):
                     # Swap with next file
                     files[i], files[i+1] = files[i+1], files[i]
@@ -173,7 +184,7 @@ def render_file_sidebar() -> None:
                     st.rerun()
             
             # Download button
-            with cols[3]:
+            with cols[4]:
                 file_path = Path(file_info['path'])
                 if file_path.exists():
                     with open(file_path, "rb") as f:
@@ -188,10 +199,14 @@ def render_file_sidebar() -> None:
                     )
             
             # Delete button
-            with cols[4]:
+            with cols[5]:
                 if st.button("❌", key=f"delete_{i}", help="Remove file"):
                     try:
                         file_path = Path(file_info['path'])
+                        
+                        # If we're deleting the currently playing file, stop playback
+                        if st.session_state.get('now_playing') == file_info['path']:
+                            st.session_state.now_playing = None
                         
                         # Remove the file using the session state manager
                         remove_uploaded_file(file_info['path'])
@@ -208,6 +223,25 @@ def render_file_sidebar() -> None:
                         st.error(f"Error deleting file: {e}")
                         import traceback
                         st.error(traceback.format_exc())
+            
+            # Audio player (hidden by default, controlled by play button)
+            if st.session_state.get('now_playing') == file_info['path']:
+                audio_file = open(file_info['path'], 'rb')
+                audio_bytes = audio_file.read()
+                audio_component = st.audio(audio_bytes, format=f'audio/{file_path.suffix[1:]}', start_time=0)
+                
+                # Add autoplay JavaScript
+                autoplay_audio = """
+                <script>
+                // Find the audio element and autoplay it
+                const audio = window.parent.document.querySelector('audio');
+                if (audio) {
+                    audio.autoplay = true;
+                    audio.play().catch(e => console.log('Autoplay prevented:', e));
+                }
+                </script>
+                """
+                st.components.v1.html(autoplay_audio, height=0)
     else:
         st.info("No files uploaded yet. Use the uploader above to add files.")
         
@@ -225,6 +259,7 @@ def render_file_sidebar() -> None:
         # Clear the session state
         st.session_state.uploaded_files = []
         st.session_state.active_file = None
+        st.session_state.now_playing = None
         st.rerun()
 
 def render_main_content() -> None:
