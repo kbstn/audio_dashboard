@@ -29,14 +29,27 @@ def init() -> None:
     
     # Create uploads directory if it doesn't exist
     UPLOAD_FOLDER.mkdir(exist_ok=True, parents=True)
-    
-    # Set page config
+
+def main():
+    """Main application entry point."""
     st.set_page_config(
         page_title=f"{APP_NAME} {VERSION}",
         page_icon="🎵",
         layout="wide",
         initial_sidebar_state="expanded"
     )
+    
+    # Custom CSS to adjust sidebar widths
+    st.markdown("""
+    <style>
+        section[data-testid="stSidebar"] {
+            width: 200px !important; /* Reduced from default */
+        }
+        section[data-testid="stSidebar"]:last-of-type {
+            width: 350px !important; /* Increased from default */
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 def render_module_sidebar() -> None:
     """Render the left sidebar with module selection."""
@@ -137,26 +150,29 @@ def render_file_sidebar() -> None:
         st.markdown("### Your Files")
         
         for i, file_info in enumerate(files):
-            # Create columns for file name, play button, move buttons, download, and delete button
-            cols = st.columns([3, 1, 1, 1, 1, 1])
+            # Create columns with adjusted widths (wider filename column)
+            cols = st.columns([4, 1, 1, 1, 1, 1])
             
-            # File name with active state
+            # Truncate long filenames
+            display_name = file_info['name']
+            if len(display_name) > 20:
+                display_name = display_name[:17] + '...'
+            
+            # File name with active state and tooltip
             with cols[0]:
                 if st.button(
-                    f"📄 {file_info['name']}",
+                    f"📄 {display_name}",
                     key=f"select_{i}",
                     use_container_width=True,
-                    type="primary" if file_info.get('active') else "secondary"
+                    type="primary" if file_info.get('active') else "secondary",
+                    help=file_info['name']  # Show full name on hover
                 ):
-                    # Set this file as active
                     set_active_file(file_info['path'])
                     st.rerun()
             
-            # Play button
+            # Play button with tooltip
             with cols[1]:
-                play_button = st.button("▶️", key=f"play_{i}", help="Play/Pause")
-                if play_button:
-                    # Toggle play state
+                if st.button("▶️", key=f"play_{i}", help=f"Play {file_info['name']}"):
                     if st.session_state.get('now_playing') == file_info['path']:
                         st.session_state.now_playing = None
                     else:
