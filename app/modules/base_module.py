@@ -2,20 +2,43 @@
 Base module for all audio processing modules.
 """
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, List, TypeVar, Type, ClassVar
+from typing import Dict, Any, Optional, List, TypeVar, Type, ClassVar, TypeAlias
 from pydantic import BaseModel
 
-# Global registry for all modules
-MODULE_REGISTRY: Dict[str, Type['BaseModule']] = {}
+# Type definitions
+ModuleType: TypeAlias = Type['BaseModule']
 
-def register_module(cls: Type['BaseModule']) -> Type['BaseModule']:
-    """Decorator to register a module class."""
-    if hasattr(cls, 'config'):
-        MODULE_REGISTRY[cls.config.name] = cls
+# Global registry for all modules
+MODULE_REGISTRY: Dict[str, ModuleType] = {}
+
+def register_module(cls: ModuleType) -> ModuleType:
+    """
+    Decorator to register a module class.
+    
+    Args:
+        cls: The module class to register
+        
+    Returns:
+        The same class, for use as a decorator
+        
+    Raises:
+        ValueError: If the module is missing required configuration
+    """
+    if not hasattr(cls, 'config'):
+        raise ValueError(f"Module class {cls.__name__} is missing required 'config' class variable")
+    
+    if not hasattr(cls.config, 'name') or not cls.config.name:
+        raise ValueError(f"Module class {cls.__name__} config is missing required 'name' field")
+    
+    # Register the module
+    MODULE_REGISTRY[cls.config.name] = cls
     return cls
 
 # Type variable for module classes
 T = TypeVar('T', bound='BaseModule')
+
+# Make the register_module function available at the module level
+__all__ = ['BaseModule', 'ModuleConfig', 'MODULE_REGISTRY', 'register_module']
 
 class ModuleConfig(BaseModel):
     """Base configuration model for modules."""
@@ -23,7 +46,6 @@ class ModuleConfig(BaseModel):
     description: str
     icon: str = "🎵"  # Default icon
 
-@register_module
 class BaseModule(ABC):
     """
     Abstract base class for all audio processing modules.

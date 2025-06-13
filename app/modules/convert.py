@@ -5,21 +5,25 @@ This module provides functionality to convert audio files between different form
 """
 import os
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, ClassVar
+
 import streamlit as st
 
 from ..utils.audio_utils import convert_audio
 from .base_module import BaseModule, ModuleConfig, register_module
 
+
 @register_module
 class ConvertModule(BaseModule):
     """Module for converting audio files between different formats."""
     
-    config = ModuleConfig(
+    # Configuration for this module
+    config: ClassVar[ModuleConfig] = ModuleConfig(
         name="Convert Audio",
         description="Convert audio files between different formats",
         icon="🔄"
     )
+    """Module for converting audio files between different formats."""
     
     # Supported output formats with their display names and file extensions
     FORMATS = {

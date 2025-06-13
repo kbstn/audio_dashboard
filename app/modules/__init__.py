@@ -3,16 +3,27 @@ Audio Processing Modules
 
 This package contains all the processing modules for the audio dashboard.
 """
+import importlib
+import pkgutil
+from pathlib import Path
+from typing import Dict, Type, List, Any
 
-from typing import Dict, Type, List
-from .base_module import BaseModule, MODULE_REGISTRY
+# Import base module first to set up the registry
+from .base_module import BaseModule, MODULE_REGISTRY, register_module
 
-# Import all modules here so they get registered
-from . import about  # noqa: F401
-from . import trim   # noqa: F401
-from . import convert  # noqa: F401
+# Get the directory containing the modules
+modules_dir = Path(__file__).parent
+
+# Import all Python files in the modules directory (except __init__.py and base_module.py)
+for finder, name, _ in pkgutil.iter_modules([str(modules_dir)]):
+    if name not in ('__init__', 'base_module'):
+        try:
+            module = importlib.import_module(f'.{name}', package='app.modules')
+            # The @register_module decorator will handle registration
+        except ImportError as e:
+            print(f"Warning: Could not import module {name}: {e}")
 
 # Export the module registry
 MODULES = MODULE_REGISTRY
 
-__all__ = ['BaseModule', 'MODULES']
+__all__ = ['BaseModule', 'MODULES', 'register_module']
