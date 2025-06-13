@@ -11,6 +11,7 @@ import ffmpeg
 import streamlit as st
 
 from ..utils.audio_utils import create_temp_file
+from ..utils import select_files
 from .base_module import BaseModule, ModuleConfig, register_module
 
 
@@ -56,25 +57,15 @@ class VinylEffectModule(BaseModule):
         """
         st.header("🎵 Vinyl Effect")
 
-        # Get the list of uploaded files
-        files = st.session_state.get("uploaded_files", [])
-
-        if not files:
-            st.warning(
-                "No audio files uploaded. Please upload files in the File Manager."
-            )
-            return
-
-        # File selection
-        selected_files = st.multiselect(
-            "Select files to process",
-            files,
-            format_func=lambda x: x["name"],
-            key="vinyl_file_select",
+        # File selection using the unified utility
+        selected_files = select_files(
+            label="Select files to process",
+            key="vinyl_effect",
+            multiple=True,
+            file_types=['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac']
         )
-
+        
         if not selected_files:
-            st.info("Please select at least one file to process.")
             return
 
         # Effect parameters

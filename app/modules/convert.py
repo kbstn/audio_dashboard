@@ -7,9 +7,11 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, ClassVar
 
+import ffmpeg
 import streamlit as st
 
-from ..utils.audio_utils import convert_audio
+from ..utils.audio_utils import create_temp_file
+from ..utils import select_files
 from .base_module import BaseModule, ModuleConfig, register_module
 
 
@@ -42,27 +44,17 @@ class ConvertModule(BaseModule):
 
     def render_ui(self) -> None:
         """Render the conversion interface."""
-        st.header("🔀 Convert Audio")
+        st.header("🔄 Convert Audio")
 
-        # Get the list of uploaded files
-        files = st.session_state.get("uploaded_files", [])
-
-        if not files:
-            st.warning(
-                "No audio files uploaded. Please upload files in the File Manager."
-            )
-            return
-
-        # File selection
-        selected_files = st.multiselect(
-            "Select files to convert",
-            files,
-            format_func=lambda x: x["name"],
-            key="convert_file_select",
+        # File selection using the unified utility
+        selected_files = select_files(
+            label="Select files to convert",
+            key="convert",
+            multiple=True,
+            file_types=['.mp3', '.wav', '.flac', '.ogg', '.m4a', '.aac']
         )
-
+        
         if not selected_files:
-            st.info("Please select at least one file to convert.")
             return
 
         # Output format selection

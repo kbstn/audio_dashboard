@@ -12,7 +12,7 @@ from typing import Optional, Dict, Any
 import streamlit as st
 from pydantic import BaseModel, Field, validator
 
-from ..utils import get_audio_info, trim_audio, create_temp_file, delete_file
+from ..utils import get_audio_info, trim_audio, create_temp_file, delete_file, select_files
 from .base_module import BaseModule, ModuleConfig, register_module
 
 
@@ -75,12 +75,18 @@ class TrimModule(BaseModule):
         """Render the module's user interface."""
         st.markdown(f"# {self.config.icon} {self.config.name}")
 
-        # Get the active file from session state
-        active_file = st.session_state.get("active_file")
-
-        if not active_file:
-            st.warning("Please upload and select an audio file first.")
+        # File selection using the unified utility (single file selection)
+        selected_files = select_files(
+            label="Select file to trim",
+            key="trim",
+            multiple=False,
+            file_types=['.mp3', '.wav', '.flac', '.ogg', '.m4a', '.aac']
+        )
+        
+        if not selected_files:
             return
+            
+        active_file = selected_files[0]["path"]
 
         # Get audio file info
         try:

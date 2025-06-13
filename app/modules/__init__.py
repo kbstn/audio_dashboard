@@ -18,10 +18,14 @@ modules_dir = Path(__file__).parent
 for finder, name, _ in pkgutil.iter_modules([str(modules_dir)]):
     if name not in ("__init__", "base_module"):
         try:
+            print(f"Importing module: {name}")  # Debug print
             module = importlib.import_module(f".{name}", package="app.modules")
             # The @register_module decorator will handle registration
-        except ImportError as e:
+            print(f"Successfully imported module: {name}")  # Debug print
+        except Exception as e:  # Catch all exceptions to see what's going wrong
             print(f"Warning: Could not import module {name}: {e}")
+            import traceback
+            traceback.print_exc()
 
 # Export the module registry
 MODULES = MODULE_REGISTRY

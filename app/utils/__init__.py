@@ -3,6 +3,11 @@ Utility functions for the Audio Processing Dashboard.
 """
 
 # Import utility functions to make them available at the package level
+from .audio_utils import *
+from .file_utils import *
+from .ui_utils import *
+
+# Re-export specific functions for backward compatibility
 from .file_utils import (
     is_audio_file,
     get_file_info,
@@ -13,6 +18,8 @@ from .file_utils import (
     get_supported_formats,
     get_supported_mimetypes,
 )
+
+from .ui_utils import select_files
 
 from .audio_utils import (
     get_audio_info,
