@@ -29,27 +29,14 @@ def init() -> None:
     
     # Create uploads directory if it doesn't exist
     UPLOAD_FOLDER.mkdir(exist_ok=True, parents=True)
-
-def main():
-    """Main application entry point."""
+    
+    # Set page config
     st.set_page_config(
         page_title=f"{APP_NAME} {VERSION}",
         page_icon="🎵",
         layout="wide",
         initial_sidebar_state="expanded"
     )
-    
-    # Custom CSS to adjust sidebar widths
-    st.markdown("""
-    <style>
-        section[data-testid="stSidebar"] {
-            width: 200px !important; /* Reduced from default */
-        }
-        section[data-testid="stSidebar"]:last-of-type {
-            width: 350px !important; /* Increased from default */
-        }
-    </style>
-    """, unsafe_allow_html=True)
 
 def render_module_sidebar() -> None:
     """Render the left sidebar with module selection."""
@@ -150,29 +137,26 @@ def render_file_sidebar() -> None:
         st.markdown("### Your Files")
         
         for i, file_info in enumerate(files):
-            # Create columns with adjusted widths (wider filename column)
-            cols = st.columns([4, 1, 1, 1, 1, 1])
+            # Create columns for file name, play button, move buttons, download, and delete button
+            cols = st.columns([5, 1, 1, 1, 1, 1])
             
-            # Truncate long filenames
-            display_name = file_info['name']
-            if len(display_name) > 20:
-                display_name = display_name[:17] + '...'
-            
-            # File name with active state and tooltip
+            # File name with active state
             with cols[0]:
                 if st.button(
-                    f"📄 {display_name}",
+                    f"📄 {file_info['name']}",
                     key=f"select_{i}",
                     use_container_width=True,
-                    type="primary" if file_info.get('active') else "secondary",
-                    help=file_info['name']  # Show full name on hover
+                    type="primary" if file_info.get('active') else "secondary"
                 ):
+                    # Set this file as active
                     set_active_file(file_info['path'])
                     st.rerun()
             
-            # Play button with tooltip
+            # Play button
             with cols[1]:
-                if st.button("▶️", key=f"play_{i}", help=f"Play {file_info['name']}"):
+                play_button = st.button("▶️", key=f"play_{i}", help="Play/Pause")
+                if play_button:
+                    # Toggle play state
                     if st.session_state.get('now_playing') == file_info['path']:
                         st.session_state.now_playing = None
                     else:
@@ -312,7 +296,7 @@ def main() -> None:
     init()
     
     # Create the main layout with three columns
-    left_col, main_col, right_col = st.columns([1.5, 5, 2])
+    left_col, main_col, right_col = st.columns([1,4,3.5])
     
     # Left sidebar (modules)
     with left_col:
