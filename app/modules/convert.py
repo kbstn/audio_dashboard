@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, ClassVar
 import ffmpeg
 import streamlit as st
 
-from ..utils.audio_utils import create_temp_file
+from ..utils.audio_utils import create_temp_file, convert_audio
 from ..utils import select_files
 from .base_module import BaseModule, ModuleConfig, register_module
 
