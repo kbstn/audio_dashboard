@@ -266,3 +266,72 @@ def extract_audio(
         delete_file(output_file)  # Clean up the output file on error
         print(f"Error extracting audio: {e.stderr.decode()}")
         raise
+
+
+def merge_audio(
+    input_files: List[str],
+    output_file: Optional[str] = None,
+    output_format: str = "mp3",
+) -> str:
+    """Merge multiple audio files into a single file.
+
+    Args:
+        input_files: List of paths to input audio files.
+        output_file: Path to save the merged audio file. If None, a temp file is created.
+        output_format: Output format/extension (default: mp3).
+
+    Returns:
+        str: Path to the merged audio file.
+    """
+    if not input_files:
+        raise ValueError("No input files provided")
+
+    if len(input_files) == 1:
+        # If only one file, just return it
+        return input_files[0]
+
+    if output_file is None:
+        output_file = create_temp_file(f".{output_format}")
+
+    try:
+        # Create a list of input streams
+        streams = [ffmpeg.input(f) for f in input_files]
+        
+        # Concatenate the audio streams
+        merged = ffmpeg.concat(*streams, v=0, a=1)
+        
+        # Set output options
+        output_kwargs = {
+            "loglevel": "error",
+            "y": None,  # Overwrite output file if it exists
+        }
+
+        # For WAV output, use pcm_s16le codec
+        if output_format.lower() == "wav":
+            output_kwargs.update({
+                "acodec": "pcm_s16le",
+                "ar": 44100,
+                "ac": 2,
+            })
+        # For MP3 output, use libmp3lame with reasonable quality
+        elif output_format.lower() == "mp3":
+            output_kwargs.update({"acodec": "libmp3lame", "q:a": 2})
+
+        # Create output stream
+        stream = ffmpeg.output(merged, output_file, **output_kwargs)
+
+        # Run the command
+        ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
+
+        return output_file
+
+    except ffmpeg.Error as e:
+        if output_file and os.path.exists(output_file):
+            delete_file(output_file)
+        print(f"Error merging audio: {e.stderr.decode() if e.stderr else str(e)}")
+        raise Exception(f"Error merging audio: {e.stderr.decode() if e.stderr else str(e)}")
+    except Exception as e:
+        if 'output_file' in locals() and output_file and os.path.exists(output_file):
+            delete_file(output_file)
+        print(f"Unexpected error merging audio: {str(e)}")
+        raise Exception(f"Error processing audio: {str(e)}")

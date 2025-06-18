@@ -7,8 +7,6 @@ trigger: always_on
 - **Check `TASK.md`** before starting a new task. If the task isn’t listed, add it with a brief description and today's date.
 - **Use consistent naming conventions, file structure, and architecture patterns** as described in `PLANNING.md`.
 
-### Time Awareness
-- Today is 2025-06-10
 
 ### 🧱 Code Structure & Modularity
 - **Never create a file longer than 250 lines of code.** If a file approaches this limit, refactor by splitting it into modules or helper files.

@@ -39,14 +39,131 @@ class VinylEffectModule(BaseModule):
         icon="🎵",
     )
 
+    # Configuration for this module
+    config = ModuleConfig(
+        name="Vinyl Effect",
+        description="Adds vinyl record characteristics to audio",
+        icon="🎵",
+    )
+
     def __init__(self):
         """
         Initialize the Vinyl Effect module.
         
-        This method sets up the output directory for processed files.
+        This sets up the module with its configuration and initializes
+        any required state.
         """
+        super().__init__()
+        self.presets = {}
+        self.load_presets()
         self.output_dir = Path(st.session_state.get("UPLOAD_FOLDER", "uploads"))
         self.output_dir.mkdir(exist_ok=True)
+
+    def load_presets(self):
+        """Load presets from session state or initialize with default presets"""
+        if 'vinyl_effect_presets' not in st.session_state:
+            st.session_state.vinyl_effect_presets = {
+                # Warm modern vinyl sound
+                'Warm Vinyl': {
+                    'highpass_freq': 400,
+                    'lowpass_freq': 10000,
+                    'echo_gain': 0.5,
+                    'echo_delay': 70,
+                    'tremolo_freq': 6.0,
+                    'tremolo_depth': 0.15,
+                    'eq_low': -3.0,
+                    'eq_high': 2.0,
+                    'volume': 1.2
+                },
+                # Classic 1950s sound
+                'Classic 50s': {
+                    'highpass_freq': 300,
+                    'lowpass_freq': 8000,
+                    'echo_gain': 1.2,
+                    'echo_delay': 120,
+                    'tremolo_freq': 8.0,
+                    'tremolo_depth': 0.1,
+                    'eq_low': -6.0,
+                    'eq_high': 3.0,
+                    'volume': 1.5
+                },
+                # 1910s Gramophone
+                '1910s Gramophone': {
+                    'highpass_freq': 800,  # Very limited low end
+                    'lowpass_freq': 3000,   # Limited high frequencies
+                    'echo_gain': 0.8,       # Some room reverb
+                    'echo_delay': 200,      # Long decay
+                    'tremolo_freq': 4.0,    # Slight wow effect
+                    'tremolo_depth': 0.3,   # Noticeable flutter
+                    'eq_low': -12.0,        # Very little bass
+                    'eq_high': -6.0,        # Reduced highs
+                    'volume': 1.8           # Compensate for low gain
+                },
+                # 1940s Radio
+                '1940s Radio': {
+                    'highpass_freq': 200,
+                    'lowpass_freq': 5000,  # AM radio bandwidth
+                    'echo_gain': 0.4,       # Subtle room echo
+                    'echo_delay': 150,      # Medium decay
+                    'tremolo_freq': 5.0,    # Subtle warble
+                    'tremolo_depth': 0.2,   # Gentle modulation
+                    'eq_low': -8.0,         # Reduced bass
+                    'eq_high': -4.0,        # Slightly harsh mids
+                    'volume': 1.3
+                },
+                # 1970s Cassette
+                '70s Cassette': {
+                    'highpass_freq': 100,
+                    'lowpass_freq': 12000,  # Cassette hiss
+                    'echo_gain': 0.3,        # Subtle tape delay
+                    'echo_delay': 50,        # Short pre-echo
+                    'tremolo_freq': 0.3,     # Very slow wow
+                    'tremolo_depth': 0.05,   # Subtle speed variations
+                    'eq_low': -2.0,          # Slight bass boost
+                    'eq_high': -3.0,         # Rolled off highs
+                    'volume': 1.4
+                },
+                # Vintage Tape Loop
+                'Vintage Tape Loop': {
+                    'highpass_freq': 150,
+                    'lowpass_freq': 8000,   # Tape hiss filter
+                    'echo_gain': 0.7,        # Noticeable delay
+                    'echo_delay': 350,       # Long tape delay
+                    'tremolo_freq': 0.5,     # Slow wow
+                    'tremolo_depth': 0.25,   # Noticeable speed variations
+                    'eq_low': -4.0,          # Reduced mud
+                    'eq_high': -2.0,         # Slightly dulled highs
+                    'volume': 1.6
+                },
+                # 1980s VHS
+                '80s VHS': {
+                    'highpass_freq': 80,
+                    'lowpass_freq': 10000,  # VHS frequency response
+                    'echo_gain': 0.6,        # Slight delay
+                    'echo_delay': 30,        # Short pre-echo
+                    'tremolo_freq': 0.2,     # Very slow wow
+                    'tremolo_depth': 0.4,    # Noticeable wow and flutter
+                    'eq_low': -6.0,          # Reduced bass
+                    'eq_high': -8.0,         # Muffled highs
+                    'volume': 1.7
+                }
+            }
+        self.presets = st.session_state.vinyl_effect_presets
+
+    def save_preset(self, name, params):
+        """Save current parameters as a new preset"""
+        self.presets[name] = params
+        st.session_state.vinyl_effect_presets = self.presets
+        st.success(f"Preset '{name}' saved!")
+        
+    def delete_preset(self, name):
+        """Delete a saved preset"""
+        if name in self.presets:
+            del self.presets[name]
+            st.session_state.vinyl_effect_presets = self.presets
+            st.success(f"Preset '{name}' deleted!")
+        else:
+            st.error(f"Preset '{name}' not found")
 
     def render_ui(self) -> None:
         """
@@ -71,6 +188,27 @@ class VinylEffectModule(BaseModule):
         # Effect parameters
         st.subheader("Effect Parameters")
 
+        # Preset management
+        col1, col2, col3 = st.columns([2, 1, 1])
+        
+        with col2:
+            selected_preset = st.selectbox(
+                "Load Preset",
+                [""] + list(self.presets.keys()),
+                key="vinyl_effect_preset_selector"
+            )
+            
+        with col3:
+            if st.button("Delete Preset", key="delete_vinyl_preset"):
+                if selected_preset and selected_preset in self.presets:
+                    self.delete_preset(selected_preset)
+                    st.rerun()
+        
+        # If a preset is selected, load its values
+        preset_params = {}
+        if selected_preset and selected_preset in self.presets:
+            preset_params = self.presets[selected_preset]
+        
         col1, col2 = st.columns(2)
 
         with col1:
@@ -79,9 +217,9 @@ class VinylEffectModule(BaseModule):
                 "Highpass Frequency (Hz)",
                 min_value=100,
                 max_value=1000,
-                value=500,
+                value=preset_params.get('highpass_freq', 500),
                 step=50,
-                help="Removes frequencies below this value",
+                help="""Removes frequencies below this value\n\n * Higher values make the audio sound thinner and more "tinny"\n * Lower values provide a warmer, fuller sound while still removing rumble""",  
             )
 
             # Lowpass filter
@@ -89,9 +227,9 @@ class VinylEffectModule(BaseModule):
                 "Lowpass Frequency (Hz)",
                 min_value=5000,
                 max_value=20000,
-                value=12000,
+                value=preset_params.get('lowpass_freq', 12000),
                 step=100,
-                help="Removes frequencies above this value",
+                help="""Removes frequencies above this value\n\n * Lower values create a muffled, \"underwater\" or \"old recording\" sound\n * Higher values preserve more high-end detail while adding vintage character""",
             )
 
             # Echo effect
@@ -100,18 +238,18 @@ class VinylEffectModule(BaseModule):
                 "Echo Gain",
                 min_value=0.1,
                 max_value=2.0,
-                value=0.8,
+                value=preset_params.get('echo_gain', 0.8),
                 step=0.1,
-                help="Echo signal volume",
+                help="""Controls the volume of the echo repeats (lower=subtle, higher=dramatic)\n\n * Lower values (closer to 0.1): The echoes will be very subtle, just a faint whisper of the original sound.\n * Around 0.5: The echoes will be clearly audible but won't overwhelm the original sound.\n * Higher values (closer to 2.0): The echoes will be very prominent and dramatic, potentially as loud as or louder than the original sound.""",
             )
 
             echo_delay = st.slider(
                 "Echo Delay (ms)",
                 min_value=1,
                 max_value=500,
-                value=60,
+                value=preset_params.get('echo_delay', 60),
                 step=1,
-                help="Delay between echoes in milliseconds",
+                help="""Delay (ms)**: Sets the time between the original sound and its echo\n\n * Shorter delays (1-50ms) create a "slapback" (single, short delay (50-150ms) that adds a quick, distinct repetition to create a vintage rockabilly or 1950s rock 'n' roll sound) effect\n * Medium delays (50-200ms) produce distinct echoes\n * Longer delays (200-500ms) create a more pronounced echo effect.""",
             )
 
         with col2:
@@ -121,18 +259,18 @@ class VinylEffectModule(BaseModule):
                 "Tremolo Frequency (Hz)",
                 min_value=0.1,
                 max_value=20.0,
-                value=8.0,
+                value=preset_params.get('tremolo_freq', 8.0),
                 step=0.1,
-                help="Frequency of the volume modulation",
+                help="""**Frequency (Hz)**: Controls how fast the volume oscillates\n * Lower values (0.1-2Hz) create slow, dramatic pulsing\n * Medium values (5-10Hz) produce classic amp tremolo\n * Higher values (10-20Hz) create a more pronounced tremolo effect.""",
             )
 
             tremolo_depth = st.slider(
                 "Tremolo Depth",
                 min_value=0.0,
                 max_value=1.0,
-                value=0.2,
+                value=preset_params.get('tremolo_depth', 0.2),
                 step=0.05,
-                help="Depth of the volume modulation",
+                help="""**Depth**: Controls the intensity of the volume oscillation\n * Lower values create subtle movement\n * Higher values produce dramatic volume swells""",
             )
 
             # Equalizer
@@ -141,18 +279,18 @@ class VinylEffectModule(BaseModule):
                 "Bass (100Hz)",
                 min_value=-12.0,
                 max_value=12.0,
-                value=-6.0,
+                value=preset_params.get('eq_low', -6.0),
                 step=0.5,
-                help="Boost/cut for low frequencies",
+                help="""**Boost/cut for low frequencies**\n * Positive values add warmth and fullness\n * Negative values create a thinner, more "vintage" sound""",
             )
 
             eq_high = st.slider(
                 "Treble (3kHz)",
                 min_value=-12.0,
                 max_value=12.0,
-                value=3.0,
+                value=preset_params.get('eq_high', 3.0),
                 step=0.5,
-                help="Boost/cut for high frequencies",
+                help="""**Boost/cut for high frequencies**\n * Positive values add presence and clarity\n * Negative values create a more muted, distant sound""",
             )
 
             # Volume
@@ -160,15 +298,41 @@ class VinylEffectModule(BaseModule):
                 "Output Volume",
                 min_value=0.1,
                 max_value=3.0,
-                value=1.2,
+                value=preset_params.get('volume', 1.2),
                 step=0.1,
-                help="Output volume multiplier",
+                help="""**Output volume multiplier**\n * 1.0 = original volume\n * 2.0 = double volume\n * 0.5 = half volume\n * up to 10.0""",
             )
 
-        # Output filename prefix
-        prefix = st.text_input(
-            "Output filename prefix", value="vinyl_", key="vinyl_prefix"
-        )
+        # Preset save and output prefix
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            # Set default prefix based on selected preset or 'vinyl_'
+            default_prefix = f"{selected_preset.lower().replace(' ', '_')}_" if selected_preset else "vinyl_"
+            prefix = st.text_input(
+                "Output filename prefix", 
+                value=default_prefix, 
+                key="vinyl_prefix"
+            )
+            
+        with col2:
+            new_preset_name = st.text_input("Save as preset", key="new_vinyl_preset_name")
+            if st.button("Save Preset"):
+                if new_preset_name:
+                    params = {
+                        'highpass_freq': highpass_freq,
+                        'lowpass_freq': lowpass_freq,
+                        'echo_gain': echo_gain,
+                        'echo_delay': echo_delay,
+                        'tremolo_freq': tremolo_freq,
+                        'tremolo_depth': tremolo_depth,
+                        'eq_low': eq_low,
+                        'eq_high': eq_high,
+                        'volume': volume
+                    }
+                    self.save_preset(new_preset_name, params)
+                    st.rerun()
+                else:
+                    st.warning("Please enter a name for the preset")
 
         # Process button
         if st.button("Apply Vinyl Effect", type="primary", key="vinyl_apply"):
@@ -356,6 +520,8 @@ class VinylEffectModule(BaseModule):
                 st.session_state.selected_module = "File Manager"
                 st.rerun()
 
+        # show advanced info
+    
     def process(self, input_file: str, output_file: str, **kwargs) -> Dict[str, Any]:
         """
         Process a single audio file with the vinyl effect.
