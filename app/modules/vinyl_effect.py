@@ -3,6 +3,7 @@ Vinyl Effect Module
 
 This module applies a vinyl-like effect to audio files with customizable parameters.
 """
+import json
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, ClassVar
@@ -55,14 +56,33 @@ class VinylEffectModule(BaseModule):
         """
         super().__init__()
         self.presets = {}
+        self.presets_file = Path("data/vinyl_effect_presets.json")
+        self.presets_file.parent.mkdir(exist_ok=True, parents=True)
         self.load_presets()
         self.output_dir = Path(st.session_state.get("UPLOAD_FOLDER", "uploads"))
         self.output_dir.mkdir(exist_ok=True)
 
+    def save_presets_to_file(self):
+        """Save presets to a JSON file"""
+        try:
+            with open(self.presets_file, 'w') as f:
+                json.dump(self.presets, f, indent=2)
+        except Exception as e:
+            st.error(f"Error saving presets: {e}")
+
     def load_presets(self):
-        """Load presets from session state or initialize with default presets"""
-        if 'vinyl_effect_presets' not in st.session_state:
-            st.session_state.vinyl_effect_presets = {
+        """Load presets from file or initialize with default presets"""
+        # Try to load presets from file
+        if self.presets_file.exists():
+            try:
+                with open(self.presets_file, 'r') as f:
+                    self.presets = json.load(f)
+                return
+            except Exception as e:
+                st.error(f"Error loading presets: {e}. Using default presets.")
+        
+        # If file doesn't exist or there was an error, use defaults
+        self.presets = {
                 # Warm modern vinyl sound
                 'Warm Vinyl': {
                     'highpass_freq': 400,
@@ -148,20 +168,24 @@ class VinylEffectModule(BaseModule):
                     'volume': 1.7
                 }
             }
-        self.presets = st.session_state.vinyl_effect_presets
+        # Save the default presets to file if they don't exist
+        if not self.presets_file.exists():
+            self.save_presets_to_file()
 
     def save_preset(self, name, params):
         """Save current parameters as a new preset"""
         self.presets[name] = params
-        st.session_state.vinyl_effect_presets = self.presets
+        self.save_presets_to_file()
         st.success(f"Preset '{name}' saved!")
-        
+        st.rerun()
+
     def delete_preset(self, name):
         """Delete a saved preset"""
         if name in self.presets:
             del self.presets[name]
-            st.session_state.vinyl_effect_presets = self.presets
+            self.save_presets_to_file()
             st.success(f"Preset '{name}' deleted!")
+            st.rerun()
         else:
             st.error(f"Preset '{name}' not found")
 
@@ -192,10 +216,9 @@ class VinylEffectModule(BaseModule):
         col1, col2, col3 = st.columns([2, 1, 1])
         
         with col2:
+            preset_names = list(self.presets.keys())
             selected_preset = st.selectbox(
-                "Load Preset",
-                [""] + list(self.presets.keys()),
-                key="vinyl_effect_preset_selector"
+                "Select preset", [""] + preset_names, format_func=lambda x: x or "Custom"
             )
             
         with col3:
@@ -207,7 +230,7 @@ class VinylEffectModule(BaseModule):
         # If a preset is selected, load its values
         preset_params = {}
         if selected_preset and selected_preset in self.presets:
-            preset_params = self.presets[selected_preset]
+            preset_params = self.presets[selected_preset].copy()
         
         col1, col2 = st.columns(2)
 
