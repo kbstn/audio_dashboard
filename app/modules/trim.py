@@ -114,23 +114,19 @@ class TrimModule(BaseModule):
                 self.settings.start_time = st.slider(
                     "Start Time",
                     min_value=0.0,
-                    max_value=min(duration - 0.1, 3600),  # Cap at 1 hour
+                    max_value=float(min(duration - 0.1, 3600)),  # Ensure float type
                     value=0.0,
                     step=0.1,
                     format="%.1f s",
                 )
 
             with col2:
-                max_end = min(
-                    duration, self.settings.start_time + 3600
-                )  # Cap at 1 hour from start
+                max_end = float(min(duration, self.settings.start_time + 3600))  # Ensure float type
                 self.settings.end_time = st.slider(
                     "End Time",
-                    min_value=min(self.settings.start_time + 0.1, max_end),
-                    max_value=max_end,
-                    value=min(
-                        duration, self.settings.start_time + 30
-                    ),  # Default 30s clip
+                    min_value=float(min(self.settings.start_time + 0.1, max_end)),
+                    max_value=float(max_end),
+                    value=float(min(duration, self.settings.start_time + 30)),  # Default 30s clip
                     step=0.1,
                     format="%.1f s",
                 )
