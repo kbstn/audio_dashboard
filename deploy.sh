@@ -4,7 +4,7 @@
 set -e
 
 # Set project directory
-PROJECT_DIR="/opt/containers/audio-dashboard"
+PROJECT_DIR="/opt/containers/audio_dashboard"
 
 # Create directory if it doesn't exist
 sudo mkdir -p /opt/containers
@@ -12,30 +12,15 @@ sudo mkdir -p /opt/containers
 # Navigate to containers directory
 cd /opt/containers/
 
-# Check if directory exists and is a git repository
-if [ -d "$PROJECT_DIR/.git" ]; then
-    echo "Existing git repository found. Pulling latest changes..."
-    cd "$PROJECT_DIR"
-    sudo git reset --hard
-    sudo git clean -fd
-    sudo git pull
-    cd ..
-else
-    # Remove existing directory if it exists but not a git repo
-    if [ -d "$PROJECT_DIR" ]; then
-        echo "Removing existing non-git directory..."
-        sudo rm -rf "$PROJECT_DIR"
-    fi
-    
-    # Clone the repository
-    echo "Cloning repository..."
-    sudo git clone https://github.com/kbstn/audio_dashboard.git "$PROJECT_DIR"
-    
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to clone repository"
-        exit 1
-    fi
+# Remove existing directory if it exists
+if [ -d "$PROJECT_DIR" ]; then
+    echo "Removing existing project directory..."
+    sudo rm -rf "$PROJECT_DIR"
 fi
+
+# Clone the repository
+echo "Cloning repository..."
+sudo git clone https://github.com/kbstn/audio_dashboard.git
 
 # Navigate to project directory
 cd "$PROJECT_DIR"
