@@ -1,26 +1,68 @@
-# Audio Processing Dashboard
+# DISCLAIMER: 
 
-A modular audio processing dashboard built with Streamlit, designed for applying various audio effects and transformations using FFmpeg.
+This project is a test to find out about windsurf ide possibillities, i soley used the SWE-1 free model and tried not to write any code or documentation by hand. I managed to create a dockerized streamlit app with ffmpeg support and a modular audio processing dashboard, which is not as i wanted it still works and does the job. Even though i tried to railguard it with rules and planning and task files the agent often lost overview of the project and wrote a lot of bloat code. A lot of stuff might simply be made up by the agent ;-)
 
-## 🐳 Docker Deployment
 
-You can easily deploy the Audio Processing Dashboard using Docker and Docker Compose.
+# 🎵 FFmpeg Audio Processing Dashboard
+
+A powerful, modular audio processing dashboard built with Streamlit and FFmpeg, designed for applying various audio effects and transformations with an intuitive web interface.
+
+## 🌟 Features
+
+### 🎛️ Audio Processing Modules
+- **Volume Control** - Adjust volume levels and normalize audio across files
+- **Format Conversion** - Convert between various audio formats (MP3, WAV, OGG, FLAC, M4A, AAC)
+- **Audio Trimming** - Cut and trim audio files with precision
+- **Audio Merging** - Combine multiple audio files into one
+- **Vinyl Effect** - Apply vintage vinyl record effects to your audio
+
+### 🗂️ File Management
+- Upload multiple audio files (WAV, MP3, OGG, FLAC, M4A, AAC)
+- Preview audio files before processing
+- Download processed files directly from the interface
+- Persistent file storage between sessions
+
+### 🎨 User Interface
+- Clean, responsive design
+- Real-time audio visualization
+- Intuitive module-based workflow
+- Dark/light theme support
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Docker installed on your system
-- Docker Compose (usually comes with Docker Desktop)
+- Docker and Docker Compose installed on your system
+- Git (for cloning the repository)
 
-### Quick Start
+### Using the Deployment Script (Recommended)
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/ffmpeg_dashboard.git
+   git clone https://github.com/kbstn/ffmpeg_dashboard.git
    cd ffmpeg_dashboard
    ```
 
-2. Copy the example environment file and update it if needed:
+2. Make the deployment script executable and run it:
    ```bash
-   cp example/.env.example .env
+   chmod +x deploy.sh
+   sudo ./deploy.sh
+   ```
+
+3. Follow the interactive prompts to configure your setup
+
+4. Access the dashboard at `http://localhost:8508`
+
+### Manual Docker Deployment
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/kbstn/ffmpeg_dashboard.git
+   cd ffmpeg_dashboard
+   ```
+
+2. Copy the example environment file:
+   ```bash
+   cp .env.example .env
    ```
    Edit the `.env` file to change any settings if necessary.
 
@@ -31,88 +73,48 @@ You can easily deploy the Audio Processing Dashboard using Docker and Docker Com
 
 4. Access the dashboard at `http://localhost:8508`
 
-### Docker Commands
+## 🐳 Docker Commands
 
-- Start the containers: `docker-compose up -d`
-- Stop the containers: `docker-compose down`
-- View logs: `docker-compose logs -f`
-- Rebuild the containers: `docker-compose up -d --build`
+| Command | Description |
+|---------|-------------|
+| `docker-compose up -d` | Start the containers in detached mode |
+| `docker-compose down` | Stop and remove the containers |
+| `docker-compose logs -f` | View container logs |
+| `docker-compose up -d --build` | Rebuild and restart containers |
+| `docker-compose exec app bash` | Open a shell in the running container |
 
-### Volumes
-- The `uploads` directory is mounted as a volume, so uploaded files will persist between container restarts.
-- The application code is also mounted as a volume for development.
+## 📂 Project Structure
 
-## 🚀 Features
+```
+ffmpeg_dashboard/
+├── app/                    # Main application code
+│   ├── modules/            # Audio processing modules
+│   ├── utils/              # Utility functions
+│   ├── config.py           # Application configuration
+│   ├── main.py             # Main application entry point
+│   └── session_state.py    # Session state management
+├── data/                   # Data files and presets
+├── uploads/                # User-uploaded files (persistent volume)
+├── .env.example           # Example environment variables
+├── docker-compose.yml      # Docker Compose configuration
+├── Dockerfile             # Docker image definition
+└── requirements.txt       # Python dependencies
+```
 
-- 🎵 **File Management**
-  - Upload multiple audio files (WAV, MP3, OGG, FLAC, M4A, AAC)
-  - Reorder files with up/down buttons
-  - Delete individual files with confirmation
-  - Clear all files at once
-  - Active file highlighting
-  - Download processed files
+## 🛠️ Development
 
-- 📦 **Modules**
-  - **Trim**: Cut audio files with precision
-  - **Convert**: Convert between different audio formats with customizable settings
-  - **Vinyl Effect**: Apply vintage vinyl record effects to audio
-  - **About**: Application information and help
-
-- ✂️ **Audio Processing**
-  - Trim audio with visual timeline
-  - Convert between multiple audio formats (MP3, WAV, FLAC, OGG, M4A, AAC)
-  - Apply vinyl effect with customizable parameters
-  - Preview audio before processing
-  - Preserve original file format
-  - Real-time feedback
-
-- 🎛️ **Audio Conversion**
-  - Convert between multiple formats (MP3, WAV, FLAC, OGG, M4A, AAC)
-  - Adjustable bitrate for lossy formats
-  - Batch processing of multiple files
-  - Custom output filename prefix
-
-- 🎚️ **Vinyl Effect**
-  - Apply vintage vinyl record effect
-  - Customizable parameters:
-    - Highpass and lowpass filtering
-    - Echo with configurable delay and decay
-    - Tremolo with adjustable frequency and depth
-    - Bass and treble equalization
-    - Output volume control
-  - Real-time preview of effect settings
-
-- 🎛️ **Modular Architecture**
-  - Easy to add new processing modules
-  - Consistent UI/UX across modules
-  - Isolated module functionality
-
-- 🎧 **User Experience**
-  - Three-column responsive layout
-  - Intuitive controls
-  - Visual feedback for all actions
-  - Error handling and user notifications
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.11 (LTS - Long Term Support)
-- FFmpeg
-- micromamba (recommended) or conda
-
-### Installation
+### Setting Up Development Environment
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd ffmpeg_dashboard2
+   git clone https://github.com/kbstn/ffmpeg_dashboard.git
+   cd ffmpeg_dashboard
    ```
 
-2. Create and activate the conda environment:
+2. Create and activate a virtual environment:
    ```bash
-   micromamba create -n audio_dashboard python=3.9
-   micromamba activate audio_dashboard
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. Install dependencies:
@@ -120,42 +122,30 @@ You can easily deploy the Audio Processing Dashboard using Docker and Docker Com
    pip install -r requirements.txt
    ```
 
-### Running the Application
+4. Install FFmpeg (required for audio processing):
+   - **Ubuntu/Debian**: `sudo apt-get install ffmpeg`
+   - **macOS**: `brew install ffmpeg`
+   - **Windows**: Download from [ffmpeg.org](https://ffmpeg.org/download.html)
 
-```bash
-streamlit run app/main.py
-```
+5. Run the development server:
+   ```bash
+   streamlit run app/main.py
+   ```
 
-## Project Structure
+### Creating New Modules
 
-```
-ffmpeg_dashboard/
-├── app/                    # Main application package
-│   ├── __init__.py         # Package initialization
-│   ├── main.py             # Main application entry point
-│   ├── config.py           # Application configuration
-│   ├── session_state.py    # Session state management
-│   ├── utils/              # Utility functions
-│   └── modules/            # Audio processing modules
-├── tests/                  # Test files
-├── uploads/                # Uploaded files (created at runtime)
-├── .env                   # Environment variables (create manually)
-├── requirements.txt       # Python dependencies
-└── README.md              # This file
-```
-
-## Adding New Modules
+To create a new audio processing module:
 
 1. Create a new Python file in `app/modules/`
-2. Create a class that inherits from `BaseModule`
-3. Implement the required methods
-4. The module will be automatically discovered and added to the UI
+2. Define your module class that inherits from `BaseModule`
+3. Use the `@register_module` decorator to register your module
 
-Example module:
+Example module structure:
 
 ```python
-from .base_module import BaseModule, ModuleConfig
+from .base_module import BaseModule, register_module, ModuleConfig
 
+@register_module
 class MyModule(BaseModule):
     config = ModuleConfig(
         name="My Module",
@@ -163,21 +153,22 @@ class MyModule(BaseModule):
         icon="🎛️"
     )
     
-    def render_ui(self):
-        st.write("Configure your module here")
-        # Add your UI components here
+    def __init__(self):
+        super().__init__()
+        # Initialize your module here
     
-    def process(self, input_file: str) -> str:
-        # Process the input file and return the output file path
-        return input_file  # Replace with actual processing
+    def render_ui(self):
+        # Render your module's UI here
+        pass
 ```
 
-## License
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-- [Streamlit](https://streamlit.io/) for the amazing dashboard framework
-- [FFmpeg](https://ffmpeg.org/) for powerful audio processing
-- [Pydantic](https://pydantic-docs.helpmanual.io/) for data validation
+- [FFmpeg](https://ffmpeg.org/) - For the powerful audio/video processing
+- [Streamlit](https://streamlit.io/) - For the amazing web app framework
+- [Python](https://www.python.org/) - For being awesome
+
