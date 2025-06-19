@@ -13,13 +13,13 @@ services:
       - STREAMLIT_SERVER_ADDRESS=${STREAMLIT_SERVER_ADDRESS}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mood-ssl.entrypoints=https"
-      - "traefik.http.routers.mood-ssl.rule=Host(`${TRAEFIK_HOST}`)"
-      - "traefik.http.routers.mood-ssl.tls=true"
-      - "traefik.http.routers.mood-ssl.tls.certresolver=http"
-      - "traefik.http.routers.mood-ssl.middlewares=default@file"
-      - "traefik.http.routers.mood-ssl.service=mood-ssl"
-      - "traefik.http.services.mood-ssl.loadbalancer.server.port=${STREAMLIT_SERVER_PORT}"
+      - "traefik.http.routers.audio-dashboard.entrypoints=https"
+      - "traefik.http.routers.audio-dashboard.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.audio-dashboard.tls=true"
+      - "traefik.http.routers.audio-dashboard.tls.certresolver=http"
+      - "traefik.http.routers.audio-dashboard.middlewares=default@file"
+      - "traefik.http.routers.audio-dashboard.service=audio-dashboard"
+      - "traefik.http.services.audio-dashboard.loadbalancer.server.port=${STREAMLIT_SERVER_PORT}"
       - "traefik.docker.network=proxy"
 
 networks:
