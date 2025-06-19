@@ -43,11 +43,31 @@ class ConvertModule(BaseModule):
         self.output_dir.mkdir(exist_ok=True)
 
     def render_ui(self) -> None:
-        """Render the conversion interface."""
-        st.header("🔄 Convert Audio")
+        """Render the conversion interface with centered content."""
+        # Module-specific title
+        st.header(f"{self.config.icon} {self.config.name}")
+        
+        # Create a centered container
+        container = st.container()
+        
+        with container:
+            # Add CSS for centering content
+            st.markdown(
+                """
+                <style>
+                .convert-container {
+                    max-width: 90%;
+                    margin: 0 auto;
+                    padding: 1rem;
+                }
+                </style>
+                <div class="convert-container">
+                """,
+                unsafe_allow_html=True
+            )
 
-        # File selection using the unified utility
-        selected_files = select_files(
+            # File selection using the unified utility
+            selected_files = select_files(
             label="Select files to convert",
             key="convert",
             multiple=True,
@@ -187,7 +207,10 @@ class ConvertModule(BaseModule):
                 # Set the active tab to the file manager
                 st.session_state.selected_module = "File Manager"
                 st.rerun()
-
+            
+            # Close the container div
+            st.markdown("</div>", unsafe_allow_html=True)
+    
     def process(self, input_file: str) -> str:
         """Process a single file (required by BaseModule)."""
         # This is a simplified version for programmatic use

@@ -73,7 +73,8 @@ class TrimModule(BaseModule):
 
     def render_ui(self) -> None:
         """Render the module's user interface."""
-        st.markdown(f"# {self.config.icon} {self.config.name}")
+        # Module-specific title
+        st.header(f"{self.config.icon} {self.config.name}")
 
         # File selection using the unified utility (single file selection)
         selected_files = select_files(

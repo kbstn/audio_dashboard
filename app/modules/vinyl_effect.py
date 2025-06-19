@@ -196,7 +196,8 @@ class VinylEffectModule(BaseModule):
         This method creates the Streamlit UI components for the vinyl effect module,
         including sliders for adjusting effect parameters and file selection controls.
         """
-        st.header("🎵 Vinyl Effect")
+        # Module-specific title
+        st.header(f"{self.config.icon} {self.config.name}")
 
         # File selection using the unified utility
         selected_files = select_files(

@@ -40,7 +40,8 @@ class MergeModule(BaseModule):
 
     def render_ui(self) -> None:
         """Render the merge interface."""
-        st.header("🔊 Merge Audio")
+        # Module-specific title
+        st.header(f"{self.config.icon} {self.config.name}")
 
         # File selection using the unified utility
         st.caption("Select multiple audio files to merge. The order of selection determines the merge order.")

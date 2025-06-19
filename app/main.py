@@ -276,8 +276,8 @@ def render_file_sidebar() -> None:
 
 def render_main_content() -> None:
     """Render the main content area."""
-    # Main content area
-    st.title(f"{APP_NAME} {VERSION}")
+    # Main content area - Removed version number from title
+    # st.title(APP_NAME)
 
     # Display the selected module or welcome message
     if st.session_state.get("selected_module") in MODULES:
@@ -311,18 +311,19 @@ def main() -> None:
     """Main application function."""
     # Initialize the app
     init()
+    
+    # Render the module sidebar (uses st.sidebar internally)
+    render_module_sidebar()
 
-    # Create the main layout with three columns
-    left_col, main_col, right_col = st.columns([1, 4, 3.5])
-
-    # Left sidebar (modules)
-    with left_col:
-        render_module_sidebar()
-
-    # Main content area
+    # Create the main layout with two columns (main content and right sidebar)
+    main_col, right_col = st.columns([5, 3.5], gap="medium",border=True)
+    
+    # Main content area with centered content
     with main_col:
-        render_main_content()
-
+        # Create a container with max-width for the content
+        with st.container():
+            render_main_content()
+    
     # Right sidebar (files)
     with right_col:
         render_file_sidebar()

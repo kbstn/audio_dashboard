@@ -7,12 +7,15 @@ import streamlit as st
 from pathlib import Path
 from .base_module import BaseModule, ModuleConfig, register_module
 
-
 @register_module
 class AboutModule(BaseModule):
     """About module that displays application information."""
 
-    config = ModuleConfig(name="About", description="About this application", icon="ℹ️")
+    config = ModuleConfig(
+        name="About",
+        description="Information about this application",
+        icon="ℹ️"
+    )
 
     def render_ui(self) -> None:
         """Render the about page UI."""
@@ -28,23 +31,23 @@ class AboutModule(BaseModule):
             st.markdown("### Features")
             st.markdown(
                 """
-            - 🎵 Upload and manage audio files
-            - ✂️ Trim and edit audio
-            - 🎚️ Apply various audio effects
-            - 💾 Export processed files
-            - 🧩 Extensible module system
-            """
+                - 🎵 Upload and manage audio files
+                - ✂️ Trim and edit audio
+                - 🎚️ Apply various audio effects
+                - 💾 Export processed files
+                - 🧩 Extensible module system
+                """
             )
 
         with col2:
             st.markdown("### Getting Started")
             st.markdown(
                 """
-            1. Upload an audio file using the sidebar
-            2. Select a module from the left sidebar
-            3. Adjust the settings as needed
-            4. Process and download your audio
-            """
+                1. Upload an audio file using the sidebar
+                2. Select a module from the left sidebar
+                3. Adjust the settings as needed
+                4. Process and download your audio
+                """
             )
 
         st.markdown("---")
