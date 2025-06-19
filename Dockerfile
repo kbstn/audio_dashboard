@@ -10,9 +10,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Create necessary directories
-RUN mkdir -p /app/uploads
-RUN chmod -R 777 /app/uploads
 
 # Copy requirements first to leverage Docker cache
 COPY requirements.txt .
