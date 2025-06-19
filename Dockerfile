@@ -10,6 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
+# Create necessary directories
+RUN mkdir -p /app/uploads
+RUN chmod -R 777 /app/uploads
+
 # Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -17,9 +21,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
-# Expose the port that will be provided at runtime
-ENV STREAMLIT_SERVER_PORT=${STREAMLIT_SERVER_PORT}
+# Set environment variables
+ENV STREAMLIT_SERVER_PORT=${STREAMLIT_SERVER_PORT:-8508}
+ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+ENV PYTHONPATH=/app
+
+# Expose the port
 EXPOSE ${STREAMLIT_SERVER_PORT}
 
-# Command to run the application (using shell form for env var expansion)
-CMD streamlit run app/main.py --server.port=${STREAMLIT_SERVER_PORT} --server.address=0.0.0.0
+# Command to run the application
+CMD ["sh", "-c", "streamlit run /app/app/main.py --server.port=${STREAMLIT_SERVER_PORT} --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"]
