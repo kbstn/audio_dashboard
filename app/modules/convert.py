@@ -80,10 +80,16 @@ class ConvertModule(BaseModule):
         else:
             bitrate = None
 
+        # Get input format from first selected file
+        input_format = Path(selected_files[0]["name"]).suffix.lower().lstrip('.')
+        
+        # Generate default prefix based on input and output formats (e.g., "mp3_to_ogg_")
+        default_prefix = f"{input_format}_to_{output_format}_"
+        
         # Output filename prefix
         prefix = st.text_input(
             "Output filename prefix (optional)",
-            value="converted_",
+            value=default_prefix,
             key="convert_prefix",
         )
 

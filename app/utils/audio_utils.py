@@ -140,10 +140,17 @@ def convert_audio(
 ) -> str:
     """Convert an audio file to a different format.
 
+    Supported formats:
+    - MP3: Uses libmp3lame codec
+    - WAV: Uses pcm_s16le codec (uncompressed)
+    - FLAC: Uses flac codec (lossless)
+    - OGG: Uses libvorbis codec
+    - M4A/AAC: Uses aac codec
+    
     Args:
         input_file: Path to the input audio file.
         output_file: Path to save the converted audio file. If None, a temp file is created.
-        format: Output format/extension.
+        format: Output format/extension (mp3, wav, flac, ogg, m4a, aac).
         bitrate: Output bitrate (e.g., '128k', '192k', '320k').
         sample_rate: Output sample rate in Hz.
         channels: Number of output channels.
@@ -154,30 +161,90 @@ def convert_audio(
     if output_file is None:
         output_file = create_temp_file(f".{format}")
 
+    # Normalize format string (remove dot if present and convert to lowercase)
+    format = format.lower().lstrip('.')
+    
+    # Map formats to their respective codecs and options
+    format_codecs = {
+        'mp3': 'libmp3lame',
+        'wav': 'pcm_s16le',  # Uncompressed WAV
+        'flac': 'flac',      # Lossless
+        'ogg': 'libvorbis',  # Ogg Vorbis
+        'm4a': 'aac',        # AAC in M4A container
+        'aac': 'aac'         # Raw AAC
+    }
+    
+    # Default output extension if not provided
+    output_ext = f".{format}"
+    
+    # Special handling for formats that need specific containers
+    if format == 'm4a':
+        output_ext = '.m4a'  # Force .m4a extension for AAC in MP4 container
+    elif format == 'aac':
+        output_ext = '.aac'  # Raw AAC
+    
+    if output_file is None:
+        output_file = create_temp_file(output_ext)
+    
+    # Ensure output file has correct extension
+    output_path = Path(output_file)
+    if output_path.suffix.lower() != output_ext:
+        output_file = str(output_path.with_suffix(output_ext))
+
     try:
         stream = ffmpeg.input(input_file)
-
-        # Set output options
-        stream = ffmpeg.output(
-            stream,
-            output_file,
-            acodec="libmp3lame" if format == "mp3" else None,
-            audio_bitrate=bitrate,
-            ar=sample_rate,
-            ac=channels,
-            loglevel="error",  # Only show errors
-        )
+        
+        # Get the appropriate codec for the output format
+        codec = format_codecs.get(format)
+        
+        # Build output options
+        output_kwargs = {
+            'ar': sample_rate,
+            'ac': channels,
+            'loglevel': 'error',
+            'y': None,  # Overwrite output file if it exists
+        }
+        
+        # Set codec if specified
+        if codec:
+            output_kwargs['acodec'] = codec
+            
+        # Special handling for different formats
+        if format == 'wav':
+            # WAV is uncompressed, doesn't use bitrate
+            output_kwargs['ar'] = sample_rate
+            output_kwargs['ac'] = channels
+        elif format == 'flac':
+            # FLAC is lossless, uses compression level instead of bitrate
+            output_kwargs['compression_level'] = 8  # 0 (fastest) to 8 (best compression)
+        else:
+            # For other formats, set the bitrate
+            output_kwargs['audio_bitrate'] = bitrate
+        
+        # Special handling for M4A/AAC
+        if format in ['m4a', 'aac']:
+            output_kwargs['strict'] = 'experimental'  # Sometimes needed for AAC
+            if format == 'm4a':
+                output_kwargs['f'] = 'ipod'  # Use iPod-compatible format for M4A
+        
+        # Create output stream
+        stream = ffmpeg.output(stream, output_file, **output_kwargs)
 
         # Run the command
-        ffmpeg.run(
-            stream, overwrite_output=True, capture_stdout=True, capture_stderr=True
-        )
+        ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
 
         return output_file
+        
     except ffmpeg.Error as e:
-        delete_file(output_file)  # Clean up the output file on error
-        print(f"Error converting audio: {e.stderr.decode()}")
-        raise
+        error_msg = e.stderr.decode('utf8') if e.stderr else str(e)
+        print(f"Error converting audio: {error_msg}")
+        if os.path.exists(output_file):
+            delete_file(output_file)  # Clean up the output file on error
+        raise Exception(f"FFmpeg error: {error_msg}")
+    except Exception as e:
+        if 'output_file' in locals() and os.path.exists(output_file):
+            delete_file(output_file)
+        raise Exception(f"Error converting audio: {str(e)}")
 
 
 def normalize_audio(
