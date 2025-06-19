@@ -4,15 +4,13 @@
 set -e
 
 # Set project directory
-PROJECT_DIR="/opt/containers/FFmpegDashboard"
-REPO_URL="https://github.com/kbstn/ffmpeg_dashboard.git"
+PROJECT_DIR="/opt/containers/audio-dashboard"
 
 # Create directory if it doesn't exist
-echo "Creating project directory..."
-sudo mkdir -p "$(dirname "$PROJECT_DIR")"
+sudo mkdir -p /opt/containers
 
 # Navigate to containers directory
-cd "$(dirname "$PROJECT_DIR")"
+cd /opt/containers/
 
 # Remove existing directory if it exists
 if [ -d "$PROJECT_DIR" ]; then
@@ -22,7 +20,7 @@ fi
 
 # Clone the repository
 echo "Cloning repository..."
-sudo git clone "$REPO_URL" "$PROJECT_DIR"
+sudo git clone https://github.com/kbstn/audio_dashboard.git
 
 # Navigate to project directory
 cd "$PROJECT_DIR"
@@ -30,18 +28,12 @@ cd "$PROJECT_DIR"
 # Copy example.env to .env if it doesn't exist
 if [ ! -f ".env" ]; then
     echo "Creating .env file from example..."
-    sudo cp .env.example .env
+    sudo cp example.env .env
     
-    # Set default values from example.env
-    DEFAULT_PORT=$(grep -E '^STREAMLIT_SERVER_PORT=' .env.example | cut -d '=' -f2- || echo "8508")
-    DEFAULT_ADDRESS=$(grep -E '^STREAMLIT_SERVER_ADDRESS=' .env.example | cut -d '=' -f2- || echo "0.0.0.0")
-    
-    # Check if Traefik host is configured in example
-    if grep -q '^TRAEFIK_HOST=' .env.example; then
-        DEFAULT_TRAEFIK_HOST=$(grep -E '^TRAEFIK_HOST=' .env.example | cut -d '=' -f2- || echo "")
-    else
-        DEFAULT_TRAEFIK_HOST=""
-    fi
+    # Set default values from example.env if they exist
+    DEFAULT_PORT=$(grep -E '^STREAMLIT_SERVER_PORT=' example.env | cut -d '=' -f2- || echo "8508")
+    DEFAULT_ADDRESS=$(grep -E '^STREAMLIT_SERVER_ADDRESS=' example.env | cut -d '=' -f2- || echo "0.0.0.0")
+    DEFAULT_TRAEFIK_HOST=$(grep -E '^TRAEFIK_HOST=' example.env | cut -d '=' -f2- || echo "your-domain.example.com")
     
     # Prompt user for values
     read -p "Enter Streamlit server port [$DEFAULT_PORT]: " PORT
@@ -50,11 +42,8 @@ if [ ! -f ".env" ]; then
     read -p "Enter Streamlit server address [$DEFAULT_ADDRESS]: " ADDRESS
     ADDRESS=${ADDRESS:-$DEFAULT_ADDRESS}
     
-    # Only ask for Traefik host if it was in the example or we have a default
-    if [ -n "$DEFAULT_TRAEFIK_HOST" ] || [ -n "$TRAEFIK_HOST" ]; then
-        read -p "Enter Traefik host [$DEFAULT_TRAEFIK_HOST]: " TRAEFIK_HOST
-        TRAEFIK_HOST=${TRAEFIK_HOST:-$DEFAULT_TRAEFIK_HOST}
-    fi
+    read -p "Enter Traefik host [$DEFAULT_TRAEFIK_HOST]: " TRAEFIK_HOST
+    TRAEFIK_HOST=${TRAEFIK_HOST:-$DEFAULT_TRAEFIK_HOST}
     
     # Update .env file with user values
     sudo sh -c "cat > .env << EOL
@@ -62,22 +51,20 @@ if [ ! -f ".env" ]; then
 STREAMLIT_SERVER_PORT=$PORT
 STREAMLIT_SERVER_ADDRESS=$ADDRESS
 
-# Optional: Uncomment and set if using Traefik
+# Traefik settings - update with your domain for deploying it in traefik environment
 TRAEFIK_HOST=$TRAEFIK_HOST
 EOL"
     
     echo ".env file has been configured with your settings."
-else
-    echo ".env file already exists. Using existing configuration."
 fi
 
 # Build and start the containers
 echo "Starting Docker Compose..."
-sudo docker-compose up -d --build
+sudo docker compose up -d --build
 
 echo -e "\nContainer is starting up..."
-echo "Streamlit dashboard will be available at http://localhost:${PORT:-8508}"
+echo "Streamlit dashboard will be available at http://localhost:$PORT"
 
 # Show logs
 echo -e "\nShowing logs (press Ctrl+C to exit):"
-sudo docker-compose logs -f
+sudo docker compose logs -f
