@@ -27,4 +27,4 @@ ENV PYTHONPATH=/app
 EXPOSE ${STREAMLIT_SERVER_PORT}
 
 # Command to run the application
-CMD ["sh", "-c", "streamlit run /app/app/main.py --server.port=${STREAMLIT_SERVER_PORT} --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"]
+CMD ["sh", "-c", "streamlit run /app/main.py --server.port=${STREAMLIT_SERVER_PORT} --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"]
