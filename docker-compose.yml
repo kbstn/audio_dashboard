@@ -5,7 +5,9 @@ services:
     ports:
       - ${STREAMLIT_SERVER_PORT}:${STREAMLIT_SERVER_PORT}
     volumes:
-      - ./:/app
+      - ./app/:/app
+      - ./uploads:/uploads
+      - ./data:/data
     networks:
       - proxy
     environment:  
