@@ -2,6 +2,46 @@
 
 A modular audio processing dashboard built with Streamlit, designed for applying various audio effects and transformations using FFmpeg.
 
+## 🐳 Docker Deployment
+
+You can easily deploy the Audio Processing Dashboard using Docker and Docker Compose.
+
+### Prerequisites
+- Docker installed on your system
+- Docker Compose (usually comes with Docker Desktop)
+
+### Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/ffmpeg_dashboard.git
+   cd ffmpeg_dashboard
+   ```
+
+2. Copy the example environment file and update it if needed:
+   ```bash
+   cp example/.env.example .env
+   ```
+   Edit the `.env` file to change any settings if necessary.
+
+3. Build and start the containers:
+   ```bash
+   docker-compose up -d --build
+   ```
+
+4. Access the dashboard at `http://localhost:8508`
+
+### Docker Commands
+
+- Start the containers: `docker-compose up -d`
+- Stop the containers: `docker-compose down`
+- View logs: `docker-compose logs -f`
+- Rebuild the containers: `docker-compose up -d --build`
+
+### Volumes
+- The `uploads` directory is mounted as a volume, so uploaded files will persist between container restarts.
+- The application code is also mounted as a volume for development.
+
 ## 🚀 Features
 
 - 🎵 **File Management**
